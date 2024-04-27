@@ -1,23 +1,30 @@
+%option noyywrap
 %{
 #include "y.tab.h"
-#include <stdio.h>
+extern "C" int yylex(void);  // Ensure yylex is declared with C linkage
 %}
 
-%option noyywrap
+%%
+
+[ \t\n]+                { /* Ignore whitespace */ }
+
+"/*"                    {
+    int c;
+    while ((c = yyinput()) != 0 && (c != '*' || yyinput() != '/'));
+}
+
+"//"                    {
+    int c;
+    while ((c = yyinput()) != '\n' && c != 0);
+}
+
+"buildnode"             { return BUILDNODE; }
+"isachildof"            { return ISACHILDOF; }
+[a-zA-Z_][a-zA-Z0-9_]*  { yylval.strValue = strdup(yytext); return IDENTIFIER; }
+[0-9]+                  { yylval.intValue = atoi(yytext); return INTEGER; }
+\"([^"]*)\"             { yylval.strValue = strdup(yytext); return STRING_LITERAL; }
+[\{\};=+]               { return *yytext; }  // Operators and delimiters
+.                       { return UNEXPECTED_CHAR; }
 
 %%
 
-"buildnode"                { return TKBUILD; }
-";"                        { return ';'; }
-"{"                        { return '{'; }
-"}"                        { return '}'; }
-"="                        { return '='; }
-"+"                        { return '+'; }
-","                        { return ','; }
-[a-zA-Z_][a-zA-Z0-9_]*     { yylval.str = strdup(yytext); return TKNAME; }
-[0-9]+                     { yylval.num = atoi(yytext); return TKINT; }
-\"[^"]*\"                  { yylval.str = strdup(yytext + 1); yylval.str[strlen(yylval.str) - 1] = 0; return TKSTRING; }
-[ \t\r\n]+                 { /* ignore whitespace */ }
-.                          { return yytext[0]; }  /* catch all single chars */
-
-%%

@@ -2,31 +2,57 @@
 #define PARSE_TREE_H
 
 #include "tree_node.h"
-#include <iostream>
 #include <map>
+#include <string>
 
-std::map<std::string, TreeNode *> nodeMap;
+// Forward declaration
+class Expression;
 
-void build_tree_node(const char *name, int weight, const char *parentName)
-{
-    TreeNode *node = new TreeNode(std::string(name), weight);
-    std::string parentStr(parentName);
+class IntegerExpression {
+public:
+    int value;
 
-    if (nodeMap.find(parentStr) != nodeMap.end())
-    {
-        TreeNode *parent = nodeMap[parentStr];
-        parent->addChild(node);
+    explicit IntegerExpression(int val) : value(val) {}
+
+    int evaluate() const {
+        return value;
     }
-    nodeMap[std::string(name)] = node;
-}
+};
 
-void print_tree(TreeNode *node, int depth = 0)
-{
-    std::cout << std::string(depth * 2, ' ') << "(" << node->name << "," << node->weight << ")" << std::endl;
-    for (TreeNode *child : node->children)
-    {
-        print_tree(child, depth + 1);
+class StringExpression {
+public:
+    std::string value;
+
+    explicit StringExpression(std::string val) : value(std::move(val)) {}
+
+    std::string evaluate() const {
+        return value;
     }
-}
+};
 
-#endif
+class BuildStatement {
+public:
+    std::shared_ptr<StringExpression> name;
+    std::shared_ptr<IntegerExpression> weight;
+    std::shared_ptr<StringExpression> isachildof;
+
+    BuildStatement(std::shared_ptr<StringExpression> n, std::shared_ptr<IntegerExpression> w, std::shared_ptr<StringExpression> childOf)
+        : name(std::move(n)), weight(std::move(w)), isachildof(std::move(childOf)) {}
+
+    std::shared_ptr<Tree_Node> evaluate(std::map<std::string, std::shared_ptr<Tree_Node>>& sym_tab) {
+        auto node = std::make_shared<Tree_Node>(name->evaluate(), weight->evaluate());
+        
+        if (isachildof) {
+            auto parent_it = sym_tab.find(isachildof->evaluate());
+            if (parent_it != sym_tab.end()) {
+                parent_it->second->add_child(node);
+            }
+        } else {
+            // Root node case; add to symbol table
+            sym_tab[node->name] = node;
+        }
+        return node;
+    }
+};
+
+#endif /* PARSE_TREE_H */

@@ -1,69 +1,46 @@
 %{
-#include <iostream>
 #include "tree_node.h"
 #include "parse_tree.h"
-
-extern int yylex();
-extern char* yytext;
-extern void yyerror(const char *s) {
-    std::cerr << "YACC Error: " << s << " near '" << yytext << "'" << std::endl;
-}
-
+#include <stdio.h>
+extern "C" int yylex(void);  // Declare yylex with C linkage
+void yyerror(const char *s);  // Error handling function
 %}
 
 %union {
-    int num;
-    char* str;
+    int intValue;
+    char* strValue;
 }
 
-%token <str> TKNAME TKSTRING
-%token <num> TKINT
-%token TKBUILD
-
-%type <str> string_expression
-%type <num> integer_expression
-
-%left '+' '-'
-%left '*' '/'
-%right '='
+%token <intValue> INTEGER
+%token <strValue> STRING_LITERAL IDENTIFIER
+%token BUILDNODE ISACHILDOF UNEXPECTED_CHAR
 
 %%
-program:
-    statement_list
+
+program
+    : statements
     ;
 
-statement_list:
+statements
+    : statement
+    | statements statement
+    ;
+
+statement
+    : buildnode_statement
+    | IDENTIFIER
+    ;
+
+buildnode_statement
+    : BUILDNODE '{' statement_list '}'
+    ;
+
+statement_list
+    : statement
     | statement_list statement
     ;
 
-statement:
-    build_node_statement
-    ;
-
-build_node_statement:
-    TKBUILD "{" "name" "=" string_expression ";" "weight" "=" integer_expression ";" "isachildof" "=" string_expression ";" "}"
-    {
-        printf("Build Node: Name=%s, Weight=%d, Parent=%s\n", $5, $9, $13);
-    }
-    ;
-
-string_expression:
-    TKSTRING {
-        $$ = strdup($1 + 1);
-        $$[strlen($$) - 1] = 0; // Remove quotes at the end of the string
-    }
-    | TKNAME {
-        $$ = strdup($1); // Copy the string value
-    }
-    ;
-
-integer_expression:
-    TKINT {
-        $$ = $1; // Directly use the integer value
-    }
-    | integer_expression '+' integer_expression {
-        $$ = $1 + $3; // Calculate the sum of integers
-    }
-    ;
-
 %%
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}

@@ -3,19 +3,19 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
-class TreeNode
-{
+class Tree_Node {
 public:
-  std::string name;
-  int weight;
-  std::vector<TreeNode *> children;
-
-  TreeNode(std::string n, int w) : name(n), weight(w) {}
-  void addChild(TreeNode *child)
-  {
-    children.push_back(child);
-  }
+    std::string name;
+    int weight;
+    std::vector<std::shared_ptr<Tree_Node>> children;
+    
+    Tree_Node(const std::string& n, int w) : name(n), weight(w) {}
+    
+    void add_child(std::shared_ptr<Tree_Node> child) {
+        children.push_back(child);
+    }
 };
 
-#endif
+#endif /* TREE_NODE_H */

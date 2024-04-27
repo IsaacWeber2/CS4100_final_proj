@@ -1,21 +1,28 @@
+CC = g++
+LEX = flex
+YACC = bison
+CFLAGS = -std=c++11 -Wall
+LIBS = -lfl
+
 all: tree_compiler
 
-tree_compiler: lex.yy.c y.tab.c
-	g++ -o tree_compiler y.tab.c lex.yy.c -lfl -std=c++11
+tree_compiler: lex.yy.o y.tab.o main.o
+	$(CC) $(CFLAGS) -o tree_compiler lex.yy.o y.tab.o main.o $(LIBS)
 
 lex.yy.c: tree_builder.l y.tab.h
-	lex tree_builder.l
+	$(LEX) tree_builder.l
+
+y.tab.o: y.tab.c
+	$(CC) $(CFLAGS) -c y.tab.c
 
 y.tab.c y.tab.h: tree_builder.y
-	yacc -d tree_builder.y
+	$(YACC) -d tree_builder.y -o y.tab.c
 
-test_lex: lex.yy.c y.tab.h
-	g++ -DLEX_TEST -o test_lex lex.yy.c y.tab.c -lfl -std=c++11
-	./test_lex
+lex.yy.o: lex.yy.c
+	$(CC) $(CFLAGS) -c lex.yy.c
 
-test_yacc: lex.yy.c y.tab.c
-	g++ -DYACC_TEST -o test_yacc y.tab.c lex.yy.c -lfl -std=c++11
-	./test_yacc
+main.o: main.cpp
+	$(CC) $(CFLAGS) -c main.cpp
 
 clean:
-	rm -f lex.yy.c y.tab.c y.tab.h tree_compiler test_lex test_yacc
+	rm -f *.o lex.yy.c y.tab.* tree_compiler
