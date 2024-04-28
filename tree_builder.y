@@ -2,8 +2,12 @@
 #include "tree_node.h"
 #include "parse_tree.h"
 #include <stdio.h>
-extern "C" int yylex(void);  // Declare yylex with C linkage
-void yyerror(const char *s);  // Error handling function
+extern int yylineno;
+extern char *yytext;
+extern "C" int yylex(void);
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s at line %d, text: '%s'\n", s, yylineno, yytext);
+}
 %}
 
 %union {
@@ -11,9 +15,9 @@ void yyerror(const char *s);  // Error handling function
     char* strValue;
 }
 
-%token <intValue> INTEGER
 %token <strValue> STRING_LITERAL IDENTIFIER
-%token BUILDNODE ISACHILDOF UNEXPECTED_CHAR
+%token <intValue> INTEGER
+%token EQUALS BUILDNODE ISACHILDOF NAME WEIGHT UNEXPECTED_CHAR
 
 %%
 
@@ -28,19 +32,28 @@ statements
 
 statement
     : buildnode_statement
-    | IDENTIFIER
     ;
 
 buildnode_statement
-    : BUILDNODE '{' statement_list '}'
+    : BUILDNODE '{' attrs '}' ';'
     ;
 
-statement_list
-    : statement
-    | statement_list statement
+attrs
+    : attrs attr
+    | attr
+    ;
+
+attr
+    : name_attr
+    | weight_attr
+    ;
+
+name_attr
+    : NAME EQUALS STRING_LITERAL ';'
+    ;
+
+weight_attr
+    : WEIGHT EQUALS INTEGER ';'
     ;
 
 %%
-void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
-}
