@@ -18,7 +18,7 @@ public:
         children.push_back(child);
     }
 
-    // Recursive function to print tree in the specified format
+    // Recursive function to print tree
     void print_node() {
         std::cout << "(" << "<" << name << "," << weight << ">";
         for (auto& child : children) {
@@ -28,4 +28,4 @@ public:
     }
 };
 
-#endif /* TREE_NODE_H */
+#endif 
