@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 class Tree_Node {
 public:
@@ -15,6 +16,15 @@ public:
     
     void add_child(std::shared_ptr<Tree_Node> child) {
         children.push_back(child);
+    }
+
+    // Recursive function to print tree in the specified format
+    void print_node() {
+        std::cout << "(" << "<" << name << "," << weight << ">";
+        for (auto& child : children) {
+            child->print_node();
+        }
+        std::cout << ")";
     }
 };
 

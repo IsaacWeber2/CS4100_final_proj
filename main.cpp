@@ -1,14 +1,13 @@
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <memory>
 #include "tree_node.h"
 #include "parse_tree.h"
 
-// Assuming extern functions from Yacc are available
+// Define the root here
+std::shared_ptr<Tree_Node> root = nullptr;
+
 extern int yyparse();
 extern FILE* yyin;
-extern int yylineno;
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -18,17 +17,20 @@ int main(int argc, char **argv) {
 
     FILE *myfile = fopen(argv[1], "r");
     if (!myfile) {
-        std::cerr << "I can't open " << argv[1] << "!" << std::endl;
+        std::cerr << "Can't open file: " << argv[1] << std::endl;
         return EXIT_FAILURE;
     }
 
     yyin = myfile;
-
-    do {
-        yyparse();
-    } while (!feof(yyin));
-    
+    yyparse();  // Parse the input file
     fclose(myfile);
+
+    if (root) {  // Check if the root is properly initialized
+        root->print_node();
+        std::cout << std::endl;
+    } else {
+        std::cerr << "No tree structure has been built." << std::endl;
+    }
 
     return EXIT_SUCCESS;
 }

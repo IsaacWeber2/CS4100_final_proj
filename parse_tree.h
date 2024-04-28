@@ -4,9 +4,10 @@
 #include "tree_node.h"
 #include <map>
 #include <string>
+#include <memory>
 
-// Forward declaration
-class Expression;
+// Global declaration of root
+extern std::shared_ptr<Tree_Node> root;  // Only declare, no definition here
 
 class IntegerExpression {
 public:
@@ -42,14 +43,16 @@ public:
     std::shared_ptr<Tree_Node> evaluate(std::map<std::string, std::shared_ptr<Tree_Node>>& sym_tab) {
         auto node = std::make_shared<Tree_Node>(name->evaluate(), weight->evaluate());
         
-        if (isachildof) {
+        if (isachildof && !isachildof->evaluate().empty()) {
             auto parent_it = sym_tab.find(isachildof->evaluate());
             if (parent_it != sym_tab.end()) {
                 parent_it->second->add_child(node);
             }
         } else {
-            // Root node case; add to symbol table
-            sym_tab[node->name] = node;
+            // Root node case; set global root
+            if (!root) {  // Ensure root is only set once as the very first node without a parent
+                root = node;
+            }
         }
         return node;
     }

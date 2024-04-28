@@ -21,39 +21,44 @@ void yyerror(const char *s) {
 
 %%
 
-program
-    : statements
+program:
+    statements
     ;
 
-statements
-    : statement
+statements:
+    statement
     | statements statement
     ;
 
-statement
-    : buildnode_statement
+statement:
+    buildnode_statement
     ;
 
-buildnode_statement
-    : BUILDNODE '{' attrs '}' ';'
+buildnode_statement:
+    BUILDNODE '{' attrs '}' ';'
     ;
 
-attrs
-    : attrs attr
+attrs:
+    attrs attr
     | attr
     ;
 
-attr
-    : name_attr
+attr:
+    name_attr
     | weight_attr
+    | isachildof_attr
     ;
 
-name_attr
-    : NAME EQUALS STRING_LITERAL ';'
+name_attr:
+    NAME EQUALS STRING_LITERAL ';'
     ;
 
-weight_attr
-    : WEIGHT EQUALS INTEGER ';'
+weight_attr:
+    WEIGHT EQUALS INTEGER ';'
+    ;
+
+isachildof_attr:
+    ISACHILDOF EQUALS STRING_LITERAL ';'
     ;
 
 %%
